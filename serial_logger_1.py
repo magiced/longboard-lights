@@ -15,15 +15,28 @@ last_b_logging = False
 outfile = 1
 csvWriter = None
 
-def open_close_port():
-    ser.open()
-    # # try:
-    # write_to_textbox(ser.name)
-    # write_to_textbox(cbo_ports.get())
+def get_available_com_ports():
+    print("Finding ports...")
+    ports = serial.tools.list_ports.comports()
+#     print("Available ports:")
+#     for i in ports:
+#         print(" - " + i.name)
+    return ports
 
-    # write_to_textbox('Opened serial port {0} at {1}'.format(cbo_ports.get(),cbo_speed.get()))
-    # # except:
-    # #     write_to_textbox('ERROR: Failed to open serial port {0} at {1}'.format(cbo_ports.get(),cbo_speed.get()))
+def open_close_port():
+    port = cbo_ports.get()
+    speed = cbo_speed.get()
+    ser.close()
+    ser.port = port
+    ser.baudrate = speed
+    ser.open()
+    try:
+        write_to_textbox(ser.name)
+        write_to_textbox(cbo_ports.get())
+
+        write_to_textbox('Opened serial port {0} at {1}'.format(cbo_ports.get(),cbo_speed.get()))
+    except:
+        write_to_textbox('ERROR: Failed to open serial port {0} at {1}'.format(cbo_ports.get(),cbo_speed.get()))
 
 def write_to_textbox(instring):
     textbox.configure(state='normal')
@@ -43,9 +56,11 @@ def send_serial():
     except NameError:
         write_to_textbox('ERROR: No Serial Port Open!')
 
-def fill_combo_boxes():
-    pass
-    #cbo_ports['vals.list_ports.comports()']
+# def fill_combo_boxes():
+#     pass
+#     list_ports = get_available_com_ports()
+#     # cbo_ports['vals.list_ports.comports()']
+#     cbo_ports[list_ports]
 
 def toggle_log():
     global b_logging
@@ -127,8 +142,8 @@ window = tk.Tk()
 window.title('Serial Logger')
 
 cbo_ports = ttk.Combobox(window)
-cbo_ports['value'] = ('/dev/ttyUSB0','/dev/ttyUSB1','COM17')
-cbo_ports.current(0)
+cbo_ports['value'] = get_available_com_ports() #('/dev/ttyUSB0','/dev/ttyUSB1','COM17')
+# cbo_ports.current(0)
 
 cbo_speed = ttk.Combobox(window)
 cbo_speed['values'] = (300,1200,2400,4800,9600,19200,38400,57600,74880,115200,230400)
@@ -172,12 +187,13 @@ lbl_serial_rx.grid_columnconfigure(0,weight=1)
 lbl_serial_rx.grid(column=0, row=5, sticky='e')
 btn_plot_choose_log.grid(row=5, column=2)
 
-ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=4)
+# ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=4)
+ser = serial.Serial()
 # ser.close()
 # ser.port(cbo_ports.get())
 # ser.baudrate(cbo_speed.get())
 # ser.open()
 
-fill_combo_boxes()
+# fill_combo_boxes()
 check_and_print_serial()
 window.mainloop()
